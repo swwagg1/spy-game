@@ -1,0 +1,6 @@
+const V='spy-v8',FONTS=['./fonts/Onest-Medium.ttf','./fonts/Onest-Bold.ttf','./fonts/Onest-ExtraBold.ttf','./fonts/Unbounded-SemiBold.ttf','./fonts/Unbounded-ExtraBold.ttf','./fonts/JetBrainsMono-400.woff','./fonts/JetBrainsMono-700.woff'],CORE=['./','./index.html','./manifest.webmanifest','./icons/icon.svg','./icons/icon-192.png','./icons/icon-512.png'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(CORE.concat(FONTS).map(u=>c.add(u).catch(()=>{})))).then(()=>self.skipWaiting()))});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
+self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);
+if(u.pathname.endsWith('/dict.json')){e.respondWith(fetch(r).then(res=>{if(res.ok){const c=res.clone();caches.open(V).then(x=>x.put(r,c))}return res}).catch(()=>caches.match(r)));return}
+e.respondWith(caches.match(r).then(h=>{const n=fetch(r).then(res=>{if(res&&(res.ok||res.type==='opaque')){const c=res.clone();caches.open(V).then(x=>x.put(r,c))}return res}).catch(()=>h||caches.match('./index.html'));return h||n}))});
